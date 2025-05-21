@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Menu Principal</title>
+  <link rel="stylesheet" href="../CSS/Cadastro.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Menu Principal</h2>
+
+    <button onclick="location.href='cadastro.html'">Cadastrar Aluno</button>
+    <button onclick="location.href='listar.html'">Listar Alunos</button>
+    <button onclick="editarCadastro()">Editar Cadastro</button>
+  </div>
+
+  <script>
+    function editarCadastro() {
+      const id = prompt('Digite o ID do aluno que deseja editar:');
+      if (id) {
+        window.location.href = `editar.html?id=${id}`;
+      }
+    }
+  </script>
+
+
+
+</body>
+</html>

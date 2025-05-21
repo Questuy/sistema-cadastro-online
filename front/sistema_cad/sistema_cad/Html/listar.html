@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Lista de Alunos</title>
+  <link rel="stylesheet" href="../CSS/Cadastro.css">
+</head>
+<body>
+  <div class="container">
+    <h2>Alunos Cadastrados</h2>
+    
+
+<div class="grid grid-3" style="margin-bottom: 1rem;">
+  <input type="text" id="filtroCpf" placeholder="Filtrar por CPF">
+  <input type="number" id="filtroIdade" placeholder="Filtrar por Idade">
+  <select id="filtroSexo">
+    <option value="">Sexo</option>
+    <option>Masculino</option>
+    <option>Feminino</option>
+    <option>Outro</option>
+  </select>
+  <input type="number" id="filtroPeso" placeholder="Filtrar por Peso (kg)">
+  <select id="filtroGraduacao">
+    <option value="">Graduação</option>
+    <option>Fixa Branca</option>
+    <option>Fixa Amarela</option>
+    <option>Fixa Laranja</option>
+    <option>Fixa Verde</option>
+    <option>Fixa Azul</option>
+    <option>Fixa Roxa</option>
+    <option>Fixa Marrom</option>
+    <option>Fixa Preta</option>
+  </select>
+  <button onclick="aplicarFiltros()">Filtrar</button>
+</div>
+
+    <table border="1" width="100%" id="tabelaAlunos">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Idade</th>
+          <th>Sexo</th>
+          <th>Email</th>
+          <th>Telefone</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <script src="../JS/menu.js"></script>
+
+
+
+  <script src="../JS/Listar.js"></script>
+</body>
+</html>
