@@ -7,13 +7,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexão com o banco MySQL do Railway
+// Conexão com o banco de dados usando variáveis de ambiente
 const db = mysql.createConnection({
-  host: 'mysql.railway.internal',
-  user: 'root',
-  password: 'FUwQhhMCeKYROdPEdjwFlmwFbKDmnKaB',
-  database: 'railway',
-  port: 3306
+  host: process.env.MYSQLHOST,
+  user: process.env.MYSQLUSER,
+  password: process.env.MYSQLPASSWORD,
+  database: process.env.MYSQLDATABASE,
+  port: process.env.MYSQLPORT
 });
 
 db.connect(err => {
@@ -24,14 +24,49 @@ db.connect(err => {
   }
 });
 
+// Rota para criar tabelas (opcional, se quiser criar via código)
+app.get('/api/criar-tabelas', (req, res) => {
+  const sql = `
+    CREATE TABLE IF NOT EXISTS alunos (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      nome VARCHAR(100),
+      idade INT,
+      sexo VARCHAR(10),
+      data_nascimento DATE,
+      cpf VARCHAR(15),
+      peso FLOAT,
+      altura FLOAT,
+      rua VARCHAR(100),
+      numero VARCHAR(10),
+      bairro VARCHAR(50),
+      cidade VARCHAR(50),
+      cep VARCHAR(10),
+      telefone VARCHAR(20),
+      email VARCHAR(100),
+      graduacao VARCHAR(50)
+    );
+    CREATE TABLE IF NOT EXISTS usuarios (
+      id INT AUTO_INCREMENT PRIMARY KEY,
+      usuario VARCHAR(50),
+      senha VARCHAR(100)
+    );
+  `;
+
+  db.query(sql, (err, result) => {
+    if (err) {
+      console.error('Erro ao criar tabelas:', err);
+      return res.status(500).json({ message: 'Erro ao criar tabelas' });
+    }
+    res.json({ message: 'Tabelas criadas com sucesso!' });
+  });
+});
+
 // Rota para cadastrar aluno
 app.post('/api/cadastrar-aluno', (req, res) => {
   const a = req.body;
-  const sql = `
-    INSERT INTO alunos 
+  const sql = `INSERT INTO alunos 
     (nome, idade, sexo, data_nascimento, cpf, peso, altura, rua, numero, bairro, cidade, cep, telefone, email, graduacao)
-    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-  `;
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
 
   const values = [
     a.nome, a.idade, a.sexo, a.dataNascimento, a.cpf, a.peso, a.altura,
@@ -40,7 +75,7 @@ app.post('/api/cadastrar-aluno', (req, res) => {
     a.telefone, a.email, a.graduacao
   ];
 
-  db.query(sql, values, (err, result) => {
+  db.query(sql, values, (err) => {
     if (err) {
       console.error('Erro ao inserir no banco:', err);
       return res.status(500).json({ message: 'Erro ao cadastrar aluno' });
@@ -49,17 +84,16 @@ app.post('/api/cadastrar-aluno', (req, res) => {
   });
 });
 
-// Rota para login
+// Login
 app.post('/api/login', (req, res) => {
   const { usuario, senha } = req.body;
-
   const sql = 'SELECT * FROM usuarios WHERE usuario = ? AND senha = ?';
+
   db.query(sql, [usuario, senha], (err, results) => {
     if (err) {
       console.error('Erro no login:', err);
       return res.status(500).json({ message: 'Erro no servidor' });
     }
-
     if (results.length > 0) {
       res.json({ message: 'Login bem-sucedido' });
     } else {
@@ -68,7 +102,7 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// Rota para listar todos os alunos
+// Listar todos os alunos
 app.get('/api/alunos', (req, res) => {
   db.query(`
     SELECT id, nome, idade, sexo, email, telefone, cpf, peso, graduacao
@@ -82,7 +116,7 @@ app.get('/api/alunos', (req, res) => {
   });
 });
 
-// Rota para buscar aluno por ID
+// Buscar aluno por ID
 app.get('/api/alunos/:id', (req, res) => {
   const { id } = req.params;
   db.query('SELECT * FROM alunos WHERE id = ?', [id], (err, results) => {
@@ -97,7 +131,7 @@ app.get('/api/alunos/:id', (req, res) => {
   });
 });
 
-// Rota para atualizar aluno
+// Atualizar aluno
 app.put('/api/alunos/:id', (req, res) => {
   const { id } = req.params;
   const a = req.body;
@@ -106,8 +140,7 @@ app.put('/api/alunos/:id', (req, res) => {
     UPDATE alunos SET
       nome = ?, idade = ?, sexo = ?, data_nascimento = ?, cpf = ?, peso = ?, altura = ?,
       rua = ?, numero = ?, bairro = ?, cidade = ?, cep = ?, telefone = ?, email = ?, graduacao = ?
-    WHERE id = ?
-  `;
+    WHERE id = ?`;
 
   const values = [
     a.nome, a.idade, a.sexo, a.dataNascimento, a.cpf, a.peso, a.altura,
@@ -115,7 +148,7 @@ app.put('/api/alunos/:id', (req, res) => {
     id
   ];
 
-  db.query(sql, values, (err, result) => {
+  db.query(sql, values, (err) => {
     if (err) {
       console.error('Erro ao atualizar aluno:', err);
       return res.status(500).json({ message: 'Erro ao atualizar aluno' });
@@ -124,11 +157,11 @@ app.put('/api/alunos/:id', (req, res) => {
   });
 });
 
-// Rota para deletar aluno
+// Deletar aluno
 app.delete('/api/alunos/:id', (req, res) => {
   const { id } = req.params;
 
-  db.query('DELETE FROM alunos WHERE id = ?', [id], (err, result) => {
+  db.query('DELETE FROM alunos WHERE id = ?', [id], (err) => {
     if (err) {
       console.error('Erro ao deletar aluno:', err);
       return res.status(500).json({ message: 'Erro ao deletar aluno' });
@@ -137,46 +170,8 @@ app.delete('/api/alunos/:id', (req, res) => {
   });
 });
 
-// Iniciar o servidor
+// Rodar o servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);
-});
-
-// ⚠️ ROTA TEMPORÁRIA para criar tabelas (usar apenas uma vez)
-app.get('/criar-tabelas', (req, res) => {
-  const sql = `
-    CREATE TABLE IF NOT EXISTS alunos (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      nome VARCHAR(100) NOT NULL,
-      idade INT,
-      sexo ENUM('M', 'F') NOT NULL,
-      data_nascimento DATE,
-      cpf VARCHAR(14),
-      peso FLOAT,
-      altura FLOAT,
-      rua VARCHAR(100),
-      numero VARCHAR(10),
-      bairro VARCHAR(100),
-      cidade VARCHAR(100),
-      cep VARCHAR(9),
-      telefone VARCHAR(20),
-      email VARCHAR(100),
-      graduacao VARCHAR(100)
-    );
-
-    CREATE TABLE IF NOT EXISTS usuarios (
-      id INT AUTO_INCREMENT PRIMARY KEY,
-      usuario VARCHAR(50) NOT NULL UNIQUE,
-      senha VARCHAR(100) NOT NULL
-    );
-  `;
-
-  db.query(sql, err => {
-    if (err) {
-      console.error('Erro ao criar tabelas:', err);
-      return res.status(500).send('Erro ao criar tabelas');
-    }
-    res.send('Tabelas criadas com sucesso!');
-  });
 });
