@@ -54,14 +54,15 @@ app.get('/api/criar-tabelas', (req, res) => {
     );
   `;
 
-  db.query(sql, (err) => {
+  db.query(sql, (err, result) => {
     if (err) {
-      console.error('❌ Erro ao criar tabelas:', err);
-      return res.status(500).json({ message: 'Erro ao criar tabelas' });
+      console.error('Erro ao criar tabelas:', err); // Mostra no terminal
+      return res.status(500).json({ message: 'Erro ao criar tabelas', error: err.sqlMessage }); // Mostra no navegador
     }
-    res.json({ message: '✅ Tabelas criadas com sucesso!' });
+    res.json({ message: 'Tabelas criadas com sucesso!' });
   });
 });
+
 
 // Cadastrar aluno
 app.post('/api/cadastrar-aluno', (req, res) => {
