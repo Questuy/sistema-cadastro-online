@@ -1,33 +1,37 @@
-// backend/server.js
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
-require('dotenv').config(); // Caso queira usar .env
-const app = express();
+require('dotenv').config(); // Usa variáveis do .env
 
+const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Conexão com o banco de dados
+// Cria conexão com o banco de dados
 const db = mysql.createConnection({
   host: process.env.MYSQLHOST,
   user: process.env.MYSQLUSER,
   password: process.env.MYSQLPASSWORD,
   database: process.env.MYSQLDATABASE,
   port: process.env.MYSQLPORT,
-  multipleStatements: true 
+  multipleStatements: true
 });
 
+// Testa conexão imediatamente e encerra se falhar
 db.connect(err => {
   if (err) {
     console.error('❌ Erro ao conectar ao banco:', err);
-  } else {
-    console.log('✅ Conectado ao banco de dados!');
+    process.exit(1); // encerra o app para evitar requisições com conexão quebrada
   }
+  console.log('✅ Conectado ao banco de dados!');
 });
 
 // Rota para criar tabelas
 app.get('/api/criar-tabelas', (req, res) => {
+  if (db.state !== 'connected') {
+    return res.status(500).json({ message: '❌ Banco de dados não conectado' });
+  }
+
   const sql = `
     CREATE TABLE IF NOT EXISTS alunos (
       id INT AUTO_INCREMENT PRIMARY KEY,
@@ -54,15 +58,14 @@ app.get('/api/criar-tabelas', (req, res) => {
     );
   `;
 
-  db.query(sql, (err, result) => {
+  db.query(sql, (err) => {
     if (err) {
-      console.error('Erro ao criar tabelas:', err); // Mostra no terminal
-      return res.status(500).json({ message: 'Erro ao criar tabelas', error: err.sqlMessage }); // Mostra no navegador
+      console.error('❌ Erro ao criar tabelas:', err);
+      return res.status(500).json({ message: 'Erro ao criar tabelas', error: err.sqlMessage });
     }
-    res.json({ message: 'Tabelas criadas com sucesso!' });
+    res.json({ message: '✅ Tabelas criadas com sucesso!' });
   });
 });
-
 
 // Cadastrar aluno
 app.post('/api/cadastrar-aluno', (req, res) => {
@@ -90,7 +93,7 @@ app.post('/api/cadastrar-aluno', (req, res) => {
   });
 });
 
-// Login simples (⚠️ sem hash de senha — não recomendado em produção)
+// Login
 app.post('/api/login', (req, res) => {
   const { usuario, senha } = req.body;
   const sql = 'SELECT * FROM usuarios WHERE usuario = ? AND senha = ?';
@@ -108,13 +111,12 @@ app.post('/api/login', (req, res) => {
   });
 });
 
-// Listar todos os alunos
+// Listar alunos
 app.get('/api/alunos', (req, res) => {
-  const sql = `
+  db.query(`
     SELECT id, nome, idade, sexo, email, telefone, cpf, peso, graduacao
     FROM alunos
-  `;
-  db.query(sql, (err, results) => {
+  `, (err, results) => {
     if (err) {
       console.error('❌ Erro ao buscar alunos:', err);
       return res.status(500).json({ message: 'Erro ao buscar alunos' });
