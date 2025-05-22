@@ -27,6 +27,7 @@ const db = mysql.createConnection({
   multipleStatements: true
 });
 
+
 // Testa conexão imediatamente
 db.connect(err => {
   if (err) {
