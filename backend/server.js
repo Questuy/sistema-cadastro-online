@@ -1,7 +1,17 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
-require('dotenv').config(); // Usa variáveis do .env
+require('dotenv').config(); // Carrega variáveis do .env
+
+// Teste para garantir que variáveis estão vindo corretamente
+console.log("🔍 Verificando variáveis .env:");
+console.log({
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  port: process.env.MYSQL_PORT
+});
 
 const app = express();
 app.use(cors());
@@ -9,22 +19,23 @@ app.use(express.json());
 
 // Cria conexão com o banco de dados
 const db = mysql.createConnection({
-  host: process.env.MYSQLHOST,
-  user: process.env.MYSQLUSER,
-  password: process.env.MYSQLPASSWORD,
-  database: process.env.MYSQLDATABASE,
-  port: process.env.MYSQLPORT,
+  host: process.env.MYSQL_HOST,
+  user: process.env.MYSQL_USER,
+  password: process.env.MYSQL_PASSWORD,
+  database: process.env.MYSQL_DATABASE,
+  port: process.env.MYSQL_PORT,
   multipleStatements: true
 });
 
-// Testa conexão imediatamente e encerra se falhar
+// Testa conexão imediatamente
 db.connect(err => {
   if (err) {
     console.error('❌ Erro ao conectar ao banco:', err);
-    process.exit(1); // encerra o app para evitar requisições com conexão quebrada
+    process.exit(1);
   }
   console.log('✅ Conectado ao banco de dados!');
 });
+
 
 // Rota para criar tabelas
 app.get('/api/criar-tabelas', (req, res) => {
