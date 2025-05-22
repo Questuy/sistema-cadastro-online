@@ -1,7 +1,8 @@
 const express = require('express');
 const mysql = require('mysql2');
 const cors = require('cors');
-require('dotenv').config(); // Carrega variáveis do .env
+require('dotenv').config(); // Usa variáveis do .env
+console.log("🔍 Variáveis carregadas:", process.env);v
 
 // Teste para garantir que variáveis estão vindo corretamente
 console.log("🔍 Verificando variáveis .env:");
